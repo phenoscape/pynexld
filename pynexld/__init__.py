@@ -28,11 +28,7 @@ def add_meta_to_obj(meta_el, curr_obj):
 
 
 _raw_rep_tags = ['meta', 'otu', 'node', 'tree', 'edge']
-_ns_rep_tags = ['{}{}'.format('{http://www.nexml.org/2009}', i) for i in _raw_rep_tags]
-_repeatable_nex_tags_list = _raw_rep_tags + _ns_rep_tags
-_REPEATABLE_NEX_EL = frozenset(_repeatable_nex_tags_list)
-del _repeatable_nex_tags_list
-del _ns_rep_tags
+_REPEATABLE_NEX_EL = frozenset(_raw_rep_tags)
 del _raw_rep_tags
 
 _CONVENTIONAL_URL_SHORTENINGS = {'http://www.nexml.org/2009': 'nex',
@@ -44,7 +40,7 @@ def debug(msg):
     if VERBOSE:
         sys.stderr.write('pynexld: {}\n'.format(msg))
 
-def _xml_ns_name_to_short(s, context_mappings):
+def _xml_ns_name_to_short(s, context_mappings, as_iri=False):
     debug('to short "{}"'.format(s))
     sp = s.split('}')
     if sp > 1:
@@ -66,7 +62,15 @@ def _xml_ns_name_to_short(s, context_mappings):
         within_ns_name = s
         ns = '_'
     print('_xml_ns_name_to_short "{}" -> "{}:{}"'.format(s, ns, within_ns_name))
+    if as_iri or ns != '_':
+        return '{}:{}'.format(ns, within_ns_name)
     return within_ns_name
+
+def nexml_tag_should_be_list(sub_etag):
+    sp = sub_etag.split(':')
+    if len(sp) > 1:
+        sub_etag = sp[-1]
+    return sub_etag in _REPEATABLE_NEX_EL
 
 def add_child_xml_to_dict(child, par_dict, context_mappings):
     sub_etag = _xml_ns_name_to_short(child.tag, context_mappings)
@@ -79,13 +83,13 @@ def add_child_xml_to_dict(child, par_dict, context_mappings):
         else:
             nso[k] = v
     if targ_obj is None:
-        if sub_etag in _REPEATABLE_NEX_EL:
+        if nexml_tag_should_be_list(sub_etag):
             targ_obj = [nso]
             par_dict[sub_etag] = targ_obj
         else:
             par_dict[sub_etag] = nso
     else:
-        if sub_etag not in _REPEATABLE_NEX_EL:
+        if not nexml_tag_should_be_list(sub_etag):
             raise ValueError('Did not expect a repeated "{}" element'.format(sub_etag))
         targ_obj.append(nso)
     return nso

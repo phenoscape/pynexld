@@ -61,15 +61,22 @@ def flatten_into_dict(el, curr_obj):
             flatten_into_dict(sub, sd)
             #print('sub attrib={} tag={}'.format(sub.attrib, sub.tag))
 
-def nexml_to_json_ld(path):
-    tree = ET.parse(path)
-    r = tree.getroot()
+def nexml_to_json_ld_dict(path=None, dom_root=None):
+    if dom_root is None:
+        tree = ET.parse(path)
+        dom_root = tree.getroot()
     d = {}
     nexml_dict = {}
-    d[r.tag] = nexml_dict
-    flatten_into_dict(r, nexml_dict)
+    d[dom_root.tag] = nexml_dict
+    flatten_into_dict(dom_root, nexml_dict)
     return d
 
 if __name__ == '__main__':
-    for fn in sys.argv[1:]:
-        print(json.dumps(nexml_to_json_ld(fn), indent=2, sort_keys=True))
+    if len(sys.argv) == 2:
+        for filepath in sys.argv[1:]:
+            d = nexml_to_json_ld_dict(path=filepath)
+            print(json.dumps(d, indent=2, sort_keys=True))
+    else:
+        sys.exit('''Expecting one filepath to a NeXML doc as an argument.
+JSON-LD will be written to standard output.
+''')

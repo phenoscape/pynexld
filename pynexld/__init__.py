@@ -50,7 +50,7 @@ def register_in_contexts(short, long, context_mappings):
     s2l[short] = long
     l2s[long] = short
 
-def _xml_ns_name_to_short(s, context_mappings, as_iri=False):
+def _xml_ns_name_to_both(s, context_mappings, as_iri=False):
     debug('to short "{}"'.format(s))
     sp = s.split('}')
     if sp > 1:
@@ -68,11 +68,15 @@ def _xml_ns_name_to_short(s, context_mappings, as_iri=False):
         within_ns_name = sp[1]
     else:
         within_ns_name = s
-        ns = '_'
-    debug('_xml_ns_name_to_short "{}" -> "{}:{}"'.format(s, ns, within_ns_name))
+        ns, url_pref = '_', None
+    debug('_xml_ns_name_to_both "{}" -> "{}:{}"'.format(s, ns, within_ns_name))
     if as_iri or ns != '_':
-        return '{}:{}'.format(ns, within_ns_name)
-    return within_ns_name
+        s = '{}:{}'.format(ns, within_ns_name)
+        if url_pref:
+            l = '{}/{}'.format(url_pref, within_ns_name)
+            return s, l
+        return s, within_ns_name
+    return within_ns_name, within_ns_name
 
 
 def nexml_tag_should_be_list(sub_etag):
@@ -83,24 +87,24 @@ def nexml_tag_should_be_list(sub_etag):
 
 
 def add_child_xml_to_dict(child, par_dict, context_mappings):
-    sub_etag = _xml_ns_name_to_short(str(child.tag), context_mappings)
-    targ_obj = par_dict.get(sub_etag)
+    short_tag, long_tag = _xml_ns_name_to_both(str(child.tag), context_mappings)
+    targ_obj = par_dict.get(long_tag)
     nso = {}
-    nso['@type'] = sub_etag
+    nso['@type'] = long_tag
     for k, v in child.attrib.items():
         if k == 'id':
             nso['@id'] = v
         else:
             nso[k] = v
     if targ_obj is None:
-        if nexml_tag_should_be_list(sub_etag):
+        if nexml_tag_should_be_list(short_tag):
             targ_obj = [nso]
-            par_dict[sub_etag] = targ_obj
+            par_dict[long_tag] = targ_obj
         else:
-            par_dict[sub_etag] = nso
+            par_dict[long_tag] = nso
     else:
-        if not nexml_tag_should_be_list(sub_etag):
-            raise ValueError('Did not expect a repeated "{}" element'.format(sub_etag))
+        if not nexml_tag_should_be_list(short_tag):
+            raise ValueError('Did not expect a repeated "{}" element'.format(short_tag))
         targ_obj.append(nso)
     return nso
 

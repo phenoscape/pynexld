@@ -44,6 +44,11 @@ def debug(msg):
     if VERBOSE:
         sys.stderr.write('pynexld: {}\n'.format(msg))
 
+def register_in_contexts(short, long, context_mappings):
+    debug('Adding "{}" <-> "{}" mapping from XML'.format(short, long))
+    s2l, l2s = context_mappings
+    s2l[short] = long
+    l2s[long] = short
 
 def _xml_ns_name_to_short(s, context_mappings, as_iri=False):
     debug('to short "{}"'.format(s))
@@ -59,9 +64,7 @@ def _xml_ns_name_to_short(s, context_mappings, as_iri=False):
             debug('shortening "{}"'.format(url_pref))
             ns = _url_prefix_to_short(url_pref)
             assert ns is not None
-            s2l[ns] = url_pref
-            l2s[url_pref] = ns
-            debug('Adding "{}" <-> "{}" mapping from XML'.format(ns, url_pref))
+            register_in_contexts(ns, url_pref, context_mappings)
         within_ns_name = sp[1]
     else:
         within_ns_name = s
@@ -116,14 +119,11 @@ def nexml_to_json_ld_dict(path=None, dom_root=None):
     if dom_root is None:
         parser = etree.XMLParser(remove_comments=True)
         tree = objectify.parse(path, parser=parser)
-        # parser = ElementTree.XMLParser()
-        # tree = ElementTree.parse(path, parser=parser)
-        # p = parser.parser
-        # debug(dir(parser.parser.namespace_prefixes))
-        # debug(parser._names.items())
         dom_root = tree.getroot()
     # Short-to-long, and long-to-short dicts
     contexts = ({}, {})
+    for short, long in dom_root.nsmap.items():
+        register_in_contexts(short, long, contexts)
     d = {}
     nexml_dict = add_child_xml_to_dict(dom_root, d, contexts)
     flatten_into_dict(dom_root, nexml_dict, contexts)

@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 from __future__ import print_function, division
-from xml.etree import ElementTree
+from lxml import etree, objectify
 import json
 import sys
 
 VERBOSE = True
+
 
 def add_meta_to_obj(meta_el, curr_obj):
     subatt = meta_el.attrib
@@ -33,12 +34,16 @@ del _raw_rep_tags
 
 _CONVENTIONAL_URL_SHORTENINGS = {'http://www.nexml.org/2009': 'nex',
                                  }
+
+
 def _url_prefix_to_short(url_pref):
     return _CONVENTIONAL_URL_SHORTENINGS.get(url_pref)
+
 
 def debug(msg):
     if VERBOSE:
         sys.stderr.write('pynexld: {}\n'.format(msg))
+
 
 def _xml_ns_name_to_short(s, context_mappings, as_iri=False):
     debug('to short "{}"'.format(s))
@@ -61,10 +66,11 @@ def _xml_ns_name_to_short(s, context_mappings, as_iri=False):
     else:
         within_ns_name = s
         ns = '_'
-    print('_xml_ns_name_to_short "{}" -> "{}:{}"'.format(s, ns, within_ns_name))
+    debug('_xml_ns_name_to_short "{}" -> "{}:{}"'.format(s, ns, within_ns_name))
     if as_iri or ns != '_':
         return '{}:{}'.format(ns, within_ns_name)
     return within_ns_name
+
 
 def nexml_tag_should_be_list(sub_etag):
     sp = sub_etag.split(':')
@@ -72,8 +78,9 @@ def nexml_tag_should_be_list(sub_etag):
         sub_etag = sp[-1]
     return sub_etag in _REPEATABLE_NEX_EL
 
+
 def add_child_xml_to_dict(child, par_dict, context_mappings):
-    sub_etag = _xml_ns_name_to_short(child.tag, context_mappings)
+    sub_etag = _xml_ns_name_to_short(str(child.tag), context_mappings)
     targ_obj = par_dict.get(sub_etag)
     nso = {}
     nso['@type'] = sub_etag
@@ -107,7 +114,13 @@ def flatten_into_dict(el, curr_obj, context_mappings):
 
 def nexml_to_json_ld_dict(path=None, dom_root=None):
     if dom_root is None:
-        tree = ElementTree.parse(path)
+        parser = etree.XMLParser(remove_comments=True)
+        tree = objectify.parse(path, parser=parser)
+        # parser = ElementTree.XMLParser()
+        # tree = ElementTree.parse(path, parser=parser)
+        # p = parser.parser
+        # debug(dir(parser.parser.namespace_prefixes))
+        # debug(parser._names.items())
         dom_root = tree.getroot()
     # Short-to-long, and long-to-short dicts
     contexts = ({}, {})

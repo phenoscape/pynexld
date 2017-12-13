@@ -37,12 +37,14 @@ def add_meta_to_obj(meta_el, curr_obj):
 # Fill: _REPEATABLE_NEX_EL with those NeXML tags that map to list
 #      and _NEXML_ATT_OR_EL with other NeXML tags or attributes that need to be emitted.
 
-_raw_rep_tags = ['cell', 'char', 'edge', 'meta', 'member', 'node', 'otu',
-                 'row', 'states', 'state', 'symbol', 'tree', 'trees', 'uncertain_state_set']
+_raw_rep_tags = ['cell', 'char', 'characters', 'edge',
+                 'meta', 'member', 'node', 'otu', 'otus',
+                 'row', 'states', 'state', 'symbol',
+                 'tree', 'trees', 'uncertain_state_set']
 _REPEATABLE_NEX_EL = frozenset(_raw_rep_tags)
 _non_rep_tags = []
-_nex_atts = ['label', 'length', 'otus',
-             'source', 'target', 'trees', 'version']
+_nex_atts = ['label', 'length',
+             'source', 'target', 'version']
 _NEXML_ATT_OR_EL = frozenset(_raw_rep_tags + _non_rep_tags + _nex_atts)
 del _raw_rep_tags
 del _non_rep_tags

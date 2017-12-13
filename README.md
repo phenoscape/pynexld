@@ -11,4 +11,15 @@ See also:
 (see https://github.com/phenoscape/KB-DataFest-2017)
   * https://hackmd.io/CwdgZghhxgjAtMAxgIxIgHATgKzwziAAzwBsAJkQEwixICmRERSQA===?both
   * https://gitter.im/phenoscape-kb-datafest/nexml-to-json-ld
-  
+
+
+Installation
+============
+
+    pip install -r requirements.txt 
+
+
+Testing
+=======
+
+    python -m pytest

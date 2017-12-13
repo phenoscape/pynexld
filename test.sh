@@ -10,8 +10,9 @@ else
     for fp in ${td}/*.xml ; do
         fn=$(basename "${fp}")
         jfn=$(echo $fn | sed 's/.xml$/.json/')
+        efn=$(echo $fn | sed 's/.xml$/.txt/')
         echo "Transforming ${fn} to JSON-LD ..."
-        python pynexld/__init__.py "${fp}" > "cruft/unnorm-${jfn}" 2> "cruft/err-$fn" || exit
+        python pynexld/__init__.py "${fp}" > "cruft/unnorm-${jfn}" 2> "cruft/err-${efn}" || exit
     done
     if which jq >/dev/null ; then
         for fp in ${td}/*.xml ; do

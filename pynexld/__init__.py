@@ -253,6 +253,12 @@ def nexml_to_json_ld_dict(path=None, dom_root=None):
     """Returns a JSON-LD representation of an NeXML instance doc (specified as the root of the
     DOM or the filepath to the XML doc)"""
     payload, context = nexml_to_json_fully_qual_and_context_dicts(path=path, dom_root=dom_root)
+    nex = payload.get('http://www.nexml.org/2009/nexml')
+    if nex:
+        b = nex.get('http://www.w3.org/XML/1998/namespace/base')
+        if b:
+            context['@base'] = b
+            debug('Added @base -> "{}" mapping'.format(b))
     debug('payload = {}'.format(json.dumps(payload, indent=2, sort_keys=True)))
     debug('context = {}'.format(json.dumps(context, indent=2, sort_keys=True)))
     compacted = jsonld.compact(payload, context)

@@ -3,5 +3,6 @@ Mark T. Holder
 Guarev Vaidya
 Matt Yoder
 
-Add your name here as you contribute (thus far we've been alphabetizing)!
+Add your name here as you contribute!
+(thus far we've been alphabetizing by last name).
 

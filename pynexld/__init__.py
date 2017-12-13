@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 from __future__ import print_function, division
-from xml.etree import ElementTree as ET
+from xml.etree import ElementTree
 import json
 import sys
+
 
 def add_meta_to_obj(meta_el, curr_obj):
     subatt = meta_el.attrib
@@ -24,12 +25,14 @@ def add_meta_to_obj(meta_el, curr_obj):
     else:
         curr_obj[prop_name] = val
 
+
 _raw_rep_tags = ['meta', 'otu', 'node', 'tree', 'edge']
 _ns_rep_tags = ['{}{}'.format('{http://www.nexml.org/2009}', i) for i in _raw_rep_tags]
 _repeatable_nex_tags_list = _raw_rep_tags + _ns_rep_tags
 _REPEATABLE_NEX_EL = frozenset(_repeatable_nex_tags_list)
 
-def new_sub_obj(parent, child, par_dict):
+
+def add_child_xml_to_dict(child, par_dict, context_mappings):
     sub_etag = child.tag
     targ_obj = par_dict.get(sub_etag)
     nso = {}
@@ -52,30 +55,32 @@ def new_sub_obj(parent, child, par_dict):
     return nso
 
 
-def flatten_into_dict(el, curr_obj):
+def flatten_into_dict(el, curr_obj, context_mappings):
     for sub in el:
         if sub.tag == '{http://www.nexml.org/2009}meta':
             add_meta_to_obj(sub, curr_obj)
         else:
-            sd = new_sub_obj(el, sub, curr_obj)
-            flatten_into_dict(sub, sd)
-            #print('sub attrib={} tag={}'.format(sub.attrib, sub.tag))
+            sd = add_child_xml_to_dict(sub, curr_obj, context_mappings)
+            flatten_into_dict(sub, sd, context_mappings)
+            # print('sub attrib={} tag={}'.format(sub.attrib, sub.tag))
+
 
 def nexml_to_json_ld_dict(path=None, dom_root=None):
     if dom_root is None:
-        tree = ET.parse(path)
+        tree = ElementTree.parse(path)
         dom_root = tree.getroot()
+    # Short-to-long, and long-to-short dicts
+    contexts = ({}, {})
     d = {}
-    nexml_dict = {}
-    d[dom_root.tag] = nexml_dict
-    flatten_into_dict(dom_root, nexml_dict)
+    nexml_dict = add_child_xml_to_dict(dom_root, d, contexts)
+    flatten_into_dict(dom_root, nexml_dict, contexts)
     return d
+
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
         for filepath in sys.argv[1:]:
-            d = nexml_to_json_ld_dict(path=filepath)
-            print(json.dumps(d, indent=2, sort_keys=True))
+            print(json.dumps(nexml_to_json_ld_dict(path=filepath), indent=2, sort_keys=True))
     else:
         sys.exit('''Expecting one filepath to a NeXML doc as an argument.
 JSON-LD will be written to standard output.

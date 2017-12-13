@@ -4,6 +4,7 @@ from xml.etree import ElementTree
 import json
 import sys
 
+VERBOSE = True
 
 def add_meta_to_obj(meta_el, curr_obj):
     subatt = meta_el.attrib
@@ -30,10 +31,45 @@ _raw_rep_tags = ['meta', 'otu', 'node', 'tree', 'edge']
 _ns_rep_tags = ['{}{}'.format('{http://www.nexml.org/2009}', i) for i in _raw_rep_tags]
 _repeatable_nex_tags_list = _raw_rep_tags + _ns_rep_tags
 _REPEATABLE_NEX_EL = frozenset(_repeatable_nex_tags_list)
+del _repeatable_nex_tags_list
+del _ns_rep_tags
+del _raw_rep_tags
 
+_CONVENTIONAL_URL_SHORTENINGS = {'http://www.nexml.org/2009': 'nex',
+                                 }
+def _url_prefix_to_short(url_pref):
+    return _CONVENTIONAL_URL_SHORTENINGS.get(url_pref)
+
+def debug(msg):
+    if VERBOSE:
+        sys.stderr.write('pynexld: {}\n'.format(msg))
+
+def _xml_ns_name_to_short(s, context_mappings):
+    debug('to short "{}"'.format(s))
+    sp = s.split('}')
+    if sp > 1:
+        assert len(sp) == 2
+        url_pref = sp[0].strip()
+        assert url_pref.startswith('{')
+        url_pref = url_pref[1:]
+        s2l, l2s = context_mappings
+        ns = l2s.get(url_pref)
+        if ns is None:
+            debug('shortening "{}"'.format(url_pref))
+            ns = _url_prefix_to_short(url_pref)
+            assert ns is not None
+            s2l[ns] = url_pref
+            l2s[url_pref] = ns
+            debug('Adding "{}" <-> "{}" mapping from XML'.format(ns, url_pref))
+        within_ns_name = sp[1]
+    else:
+        within_ns_name = s
+        ns = '_'
+    print('_xml_ns_name_to_short "{}" -> "{}:{}"'.format(s, ns, within_ns_name))
+    return within_ns_name
 
 def add_child_xml_to_dict(child, par_dict, context_mappings):
-    sub_etag = child.tag
+    sub_etag = _xml_ns_name_to_short(child.tag, context_mappings)
     targ_obj = par_dict.get(sub_etag)
     nso = {}
     nso['@type'] = sub_etag

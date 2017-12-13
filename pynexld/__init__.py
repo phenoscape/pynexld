@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import print_function, division
 from lxml import etree, objectify
+from pyld import jsonld
 import json
 import sys
 
@@ -33,6 +34,7 @@ _REPEATABLE_NEX_EL = frozenset(_raw_rep_tags)
 del _raw_rep_tags
 
 _CONVENTIONAL_URL_SHORTENINGS = {'http://www.nexml.org/2009': 'nex',
+                                 'http://www.w3.org/XML/1998/namespace': 'xml',
                                  }
 
 
@@ -44,28 +46,42 @@ def debug(msg):
     if VERBOSE:
         sys.stderr.write('pynexld: {}\n'.format(msg))
 
-def register_in_contexts(short, long, context_mappings):
+def register_in_contexts(short, long, sub, context_mappings):
+    if not short:
+        return
+    s2l, l2s = context_mappings[:2]
     debug('Adding "{}" <-> "{}" mapping from XML'.format(short, long))
-    s2l, l2s = context_mappings
-    s2l[short] = long
-    l2s[long] = short
+    if short not in s2l:
+        s2l[short] = long
+        l2s[long] = short
+    register_in_jsonld_context(long, sub, context_mappings)
+
+def register_in_jsonld_context(long, sub, context_mapptings):
+    if sub:
+        jldc = context_mapptings[2]
+        fl = '{}/{}'.format(long, sub)
+        if sub not in jldc:
+            debug('Adding "{}" <-> "{}" mapping to precursor of JSON-LD context'.format(sub, fl))
+            jldc[sub] = fl
 
 def _xml_ns_name_to_both(s, context_mappings, as_iri=False):
     debug('to short "{}"'.format(s))
     sp = s.split('}')
-    if sp > 1:
+    if len(sp) > 1:
         assert len(sp) == 2
         url_pref = sp[0].strip()
         assert url_pref.startswith('{')
         url_pref = url_pref[1:]
-        s2l, l2s = context_mappings
+        s2l, l2s = context_mappings[:2]
         ns = l2s.get(url_pref)
+        within_ns_name = sp[1]
         if ns is None:
             debug('shortening "{}"'.format(url_pref))
             ns = _url_prefix_to_short(url_pref)
             assert ns is not None
-            register_in_contexts(ns, url_pref, context_mappings)
-        within_ns_name = sp[1]
+            register_in_contexts(ns, url_pref, within_ns_name, context_mappings)
+        else:
+            register_in_jsonld_context(url_pref, within_ns_name, context_mappings)
     else:
         within_ns_name = s
         ns, url_pref = '_', None
@@ -95,7 +111,11 @@ def add_child_xml_to_dict(child, par_dict, context_mappings):
         if k == 'id':
             nso['@id'] = v
         else:
-            nso[k] = v
+            short_a, long_a = _xml_ns_name_to_both(k, context_mappings)
+            #if isinstance(v, str) and v.startswith('nex:'):
+            #    v = v[4:]
+            #    debug("HACK!!!!!!!!")
+            nso[long_a] = v
     if targ_obj is None:
         if nexml_tag_should_be_list(short_tag):
             targ_obj = [nso]
@@ -119,19 +139,27 @@ def flatten_into_dict(el, curr_obj, context_mappings):
             # print('sub attrib={} tag={}'.format(sub.attrib, sub.tag))
 
 
-def nexml_to_json_ld_dict(path=None, dom_root=None):
+def nexml_to_json_fully_qual_and_context_dicts(path=None, dom_root=None):
     if dom_root is None:
         parser = etree.XMLParser(remove_comments=True)
         tree = objectify.parse(path, parser=parser)
         dom_root = tree.getroot()
     # Short-to-long, and long-to-short dicts
-    contexts = ({}, {})
+    contexts = ({}, {}, {})
     for short, long in dom_root.nsmap.items():
-        register_in_contexts(short, long, contexts)
+        register_in_contexts(short, long, None, contexts)
     d = {}
     nexml_dict = add_child_xml_to_dict(dom_root, d, contexts)
     flatten_into_dict(dom_root, nexml_dict, contexts)
-    return d
+    return d, contexts[2]
+
+
+def nexml_to_json_ld_dict(path=None, dom_root=None):
+    payload, context = nexml_to_json_fully_qual_and_context_dicts(path=path, dom_root=dom_root)
+    debug('payload = {}'.format(json.dumps(payload, indent=2, sort_keys=True)))
+    debug('context = {}'.format(json.dumps(context, indent=2, sort_keys=True)))
+    compacted = jsonld.compact(payload, context)
+    return compacted
 
 
 if __name__ == '__main__':

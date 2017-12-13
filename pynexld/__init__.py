@@ -16,7 +16,10 @@ def add_meta_to_obj(meta_el, curr_obj):
         val = subatt['href']
     elif sat in {'LiteralMeta', 'nex:LiteralMeta'}:
         prop_name = subatt['property']
-        val = subatt['content']
+        val = subatt.get('content')
+        if val is None:
+            val = meta_el.text or ''
+            val = val.strip()
     else:
         raise NotImplementedError('meta with type "{}"'.format(sat))
     if prop_name in curr_obj:
@@ -33,7 +36,8 @@ def add_meta_to_obj(meta_el, curr_obj):
 # Fill: _REPEATABLE_NEX_EL with those NeXML tags that map to list
 #      and _NEXML_ATT_OR_EL with other NeXML tags or attributes that need to be emitted.
 
-_raw_rep_tags = ['meta', 'otu', 'node', 'tree', 'edge']
+_raw_rep_tags = ['cell', 'char', 'edge', 'meta', 'member', 'node', 'otu',
+                 'row', 'states', 'state', 'tree', ]
 _REPEATABLE_NEX_EL = frozenset(_raw_rep_tags)
 _non_rep_tags = []
 _nex_atts = ['label', 'length', 'otus',

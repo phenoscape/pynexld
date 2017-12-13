@@ -29,14 +29,20 @@ def add_meta_to_obj(meta_el, curr_obj):
         curr_obj[prop_name] = val
 
 
+####################################################################################################
+# Fill: _REPEATABLE_NEX_EL with those NeXML tags that map to list
+#      and _NEXML_ATT_OR_EL with other NeXML tags or attributes that need to be emitted.
+
 _raw_rep_tags = ['meta', 'otu', 'node', 'tree', 'edge']
 _REPEATABLE_NEX_EL = frozenset(_raw_rep_tags)
 _non_rep_tags = []
-_nex_atts = ['label']
+_nex_atts = ['label', 'length', 'otus',
+             'source', 'target', 'trees', 'version']
 _NEXML_ATT_OR_EL = frozenset(_raw_rep_tags + _non_rep_tags + _nex_atts)
 del _raw_rep_tags
 del _non_rep_tags
 del _nex_atts
+####################################################################################################
 
 NEXML_PREF = 'http://www.nexml.org/2009'
 BRACK_NEXML_PREF = '{' + NEXML_PREF + '}'

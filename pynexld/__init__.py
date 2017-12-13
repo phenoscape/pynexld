@@ -2,6 +2,7 @@
 """Python NeXML -> JSON-LD converter
 """
 from __future__ import print_function, division
+# noinspection PyUnresolvedReferences
 from lxml import etree, objectify
 from pyld import jsonld
 import json
@@ -45,6 +46,7 @@ def add_meta_to_obj(meta_el, curr_obj):
 
 _REPEATABLE_NEX_EL, _NEXML_ATT_OR_EL = None, None
 
+
 def _cache_nexml_element_names():
     """_REPEATABLE_NEX_EL with those NeXML tags that map to list
     and _NEXML_ATT_OR_EL with other NeXML tags or attributes that need to be emitted.
@@ -59,6 +61,7 @@ def _cache_nexml_element_names():
     _nex_atts = ['label', 'length',
                  'source', 'target', 'version']
     _NEXML_ATT_OR_EL = frozenset(_raw_rep_tags + _non_rep_tags + _nex_atts)
+
 
 _cache_nexml_element_names()
 
@@ -233,9 +236,7 @@ def nexml_to_json_fully_qual_and_context_dicts(path=None, dom_root=None):
                              "nexml_to_json_fully_qual_and_context_dicts")
         if not os.path.exists(path):
             raise ValueError('The XML file "{}" does not exist'.format(path))
-        # noinspection PyUnresolvedReferences
         parser = etree.XMLParser(remove_comments=True)
-        # noinspection PyUnresolvedReferences
         tree = objectify.parse(path, parser=parser)
         dom_root = tree.getroot()
     # Short-to-long, and long-to-short dicts

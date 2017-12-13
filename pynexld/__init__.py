@@ -181,6 +181,8 @@ def nexml_tag_should_be_list(sub_etag):
         sub_etag = sp[-1]
     return sub_etag in _REPEATABLE_NEX_EL
 
+BASE_URL = ''
+ID_PREF = '_'
 
 def add_child_xml_to_dict(child, par_dict, context_mappings):
     """Puts a DOM element `child` into a the temporary dict belonging to the parent `par_dict`,
@@ -191,7 +193,8 @@ def add_child_xml_to_dict(child, par_dict, context_mappings):
     nso = {'@type': long_tag}
     for k, v in child.attrib.items():
         if k == 'id':
-            nso['@id'] = v
+            nso['@id'] = '{}{}'.format(BASE_URL, v) if BASE_URL else v
+            # nso['@id'] = '{}{}'.format(ID_PREF, v) if BASE_URL else v
         else:
             short_a, long_a, a_url = _xml_ns_name_to_short_long_url(k, context_mappings)
             # if isinstance(v, str) and v.startswith('nex:'):
@@ -227,6 +230,7 @@ def flatten_into_dict(el, curr_obj, context_mappings):
 
 
 def nexml_to_json_fully_qual_and_context_dicts(path=None, dom_root=None):
+    global BASE_URL, ID_PREF
     """Returns a JSON representation of an NeXML instance doc (specified as the root of the
     DOM or the filepath to the XML doc) as a dictionary and corresponding context dict
     that can be transformed using jsonld.compact"""
@@ -245,6 +249,12 @@ def nexml_to_json_fully_qual_and_context_dicts(path=None, dom_root=None):
         register_in_contexts(short, long_name, '', contexts)
     d = {}
     nexml_dict = add_child_xml_to_dict(dom_root, d, contexts)
+    b = nexml_dict.get('http://www.w3.org/XML/1998/namespace/base')
+    if b:
+        contexts[2]['@base'] = b
+        BASE_URL = b
+        # contexts[2]['nexidbase'] = b
+        # ID_PREF = 'nexidbase'
     flatten_into_dict(dom_root, nexml_dict, contexts)
     return d, contexts[2]
 

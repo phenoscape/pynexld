@@ -4,6 +4,7 @@ from lxml import etree, objectify
 from pyld import jsonld
 import json
 import sys
+import os
 
 VERBOSE = True
 
@@ -11,7 +12,7 @@ VERBOSE = True
 def add_meta_to_obj(meta_el, curr_obj):
     subatt = meta_el.attrib
     sat = subatt['{http://www.w3.org/2001/XMLSchema-instance}type']
-    if sat == 'ResourceMeta':
+    if sat in {'ResourceMeta', 'nex:ResourceMeta'}:
         prop_name = subatt['rel']
         val = subatt['href']
     elif sat in {'LiteralMeta', 'nex:LiteralMeta'}:
@@ -37,7 +38,7 @@ def add_meta_to_obj(meta_el, curr_obj):
 #      and _NEXML_ATT_OR_EL with other NeXML tags or attributes that need to be emitted.
 
 _raw_rep_tags = ['cell', 'char', 'edge', 'meta', 'member', 'node', 'otu',
-                 'row', 'states', 'state', 'symbol', 'tree', ]
+                 'row', 'states', 'state', 'symbol', 'tree', 'trees', 'uncertain_state_set']
 _REPEATABLE_NEX_EL = frozenset(_raw_rep_tags)
 _non_rep_tags = []
 _nex_atts = ['label', 'length', 'otus',
@@ -175,6 +176,11 @@ def flatten_into_dict(el, curr_obj, context_mappings):
 
 def nexml_to_json_fully_qual_and_context_dicts(path=None, dom_root=None):
     if dom_root is None:
+        if not path:
+            raise ValueError("Either dom_root or path must be sent to " \
+                             "nexml_to_json_fully_qual_and_context_dicts")
+        if not os.path.exists(path):
+            raise ValueError('The XML file "{}" does not exist'.format(path))
         parser = etree.XMLParser(remove_comments=True)
         tree = objectify.parse(path, parser=parser)
         dom_root = tree.getroot()

@@ -12,6 +12,9 @@ import os
 VERBOSE = True
 __version__ = '0.0.1a'
 
+# @TODO: creating a class to manage the context would get rid of the global BASE_URL and a few
+#   other hacks.
+
 def add_meta_to_obj(meta_el, curr_obj):
     """Creates a key value pair in `curr_obj` from a `meta` NeXML element that is inside
     the corresponding XML element.

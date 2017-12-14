@@ -43,3 +43,7 @@ or (if you have checked out [nexld](https://github.com/phenoscape/nexld) as the
 
     bash test.sh
 
+
+Acknowledgements
+===============
+The aforementioned nexld and some meta processing tags from DendroPy

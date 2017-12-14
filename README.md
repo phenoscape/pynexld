@@ -1,8 +1,6 @@
 pynexld
 =======
 
-Playing around with Python NeXML <-> JSON-LD
- 
 Intended to be lightweight Python NeXML -> JSON-LD
 
 See also:
@@ -12,6 +10,9 @@ See also:
   * https://hackmd.io/CwdgZghhxgjAtMAxgIxIgHATgKzwziAAzwBsAJkQEwixICmRERSQA===?both
   * https://gitter.im/phenoscape-kb-datafest/nexml-to-json-ld
 
+Status:
+  * Sort of works (see @TODO comments in the code)
+  * Python 2.7 or >3.2
 
 Installation
 ============

@@ -16,10 +16,30 @@ See also:
 Installation
 ============
 
-    pip install -r requirements.txt 
+    pip install -r requirements.txt
+    python setup.py install
+
+or simply:
+
+    python setup.py develop
+    
+Running
+=======
+
+     nexml2jsonld.py data/example.xml > example.json
 
 
 Testing
 =======
 
     python -m pytest
+
+or
+
+    python setup.py test
+
+or (if you have checked out [nexld](https://github.com/phenoscape/nexld) as the 
+    "sister" directory of pynexld then:
+
+    bash test.sh
+

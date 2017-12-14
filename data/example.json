@@ -1,0 +1,187 @@
+{
+  "@context": {
+    "@base": "http://example.org/", 
+    "base": "http://www.w3.org/XML/1998/namespace/base", 
+    "edge": "http://www.nexml.org/2009/edge", 
+    "label": "http://www.nexml.org/2009/label", 
+    "length": "http://www.nexml.org/2009/length", 
+    "nexml": "http://www.nexml.org/2009/nexml", 
+    "node": "http://www.nexml.org/2009/node", 
+    "otu": "http://www.nexml.org/2009/otu", 
+    "otus": "http://www.nexml.org/2009/otus", 
+    "schemaLocation": "http://www.w3.org/2001/XMLSchema-instance/schemaLocation", 
+    "source": "http://www.nexml.org/2009/source", 
+    "target": "http://www.nexml.org/2009/target", 
+    "tree": "http://www.nexml.org/2009/tree", 
+    "trees": "http://www.nexml.org/2009/trees", 
+    "type": "http://www.w3.org/2001/XMLSchema-instance/type", 
+    "version": "http://www.nexml.org/2009/version"
+  }, 
+  "nexml": {
+    "@type": "nexml", 
+    "base": "http://example.org/", 
+    "cc:license": "http://creativecommons.org/publicdomain/zero/1.0/", 
+    "dc:creator": "Boettiger, Carl", 
+    "dc:date": "2012-04-01", 
+    "dc:description": "A description of my test", 
+    "dc:publisher": "unpublished data", 
+    "dc:title": "My test title", 
+    "otus": {
+      "@id": "tax1", 
+      "@type": "otus", 
+      "label": "RootTaxaBlock", 
+      "otu": [
+        {
+          "@id": "t1", 
+          "@type": "otu", 
+          "label": "species 1"
+        }, 
+        {
+          "@id": "t2", 
+          "@type": "otu", 
+          "label": "species 2"
+        }, 
+        {
+          "@id": "t3", 
+          "@type": "otu", 
+          "label": "species 3"
+        }, 
+        {
+          "@id": "t4", 
+          "@type": "otu", 
+          "label": "species 4"
+        }, 
+        {
+          "@id": "t5", 
+          "@type": "otu", 
+          "label": "species 5"
+        }
+      ]
+    }, 
+    "schemaLocation": "http://www.nexml.org/2009 ../xsd/nexml.xsd", 
+    "trees": {
+      "@id": "Trees1", 
+      "@type": "trees", 
+      "label": "TreesBlockFromXML", 
+      "otus": "tax1", 
+      "tree": {
+        "@id": "tree1", 
+        "@type": "tree", 
+        "edge": [
+          {
+            "@id": "e1", 
+            "@type": "edge", 
+            "length": "0.34534", 
+            "source": "n1", 
+            "target": "n3"
+          }, 
+          {
+            "@id": "e2", 
+            "@type": "edge", 
+            "length": "0.4353", 
+            "source": "n1", 
+            "target": "n2"
+          }, 
+          {
+            "@id": "e3", 
+            "@type": "edge", 
+            "length": "0.324", 
+            "source": "n3", 
+            "target": "n4"
+          }, 
+          {
+            "@id": "e4", 
+            "@type": "edge", 
+            "length": "0.3247", 
+            "source": "n3", 
+            "target": "n7"
+          }, 
+          {
+            "@id": "e5", 
+            "@type": "edge", 
+            "length": "0.234", 
+            "source": "n4", 
+            "target": "n5"
+          }, 
+          {
+            "@id": "e6", 
+            "@type": "edge", 
+            "length": "0.3243", 
+            "source": "n4", 
+            "target": "n6"
+          }, 
+          {
+            "@id": "e7", 
+            "@type": "edge", 
+            "length": "0.32443", 
+            "source": "n7", 
+            "target": "n8"
+          }, 
+          {
+            "@id": "e8", 
+            "@type": "edge", 
+            "length": "0.2342", 
+            "source": "n7", 
+            "target": "n9"
+          }
+        ], 
+        "label": "tree1", 
+        "node": [
+          {
+            "@id": "n1", 
+            "@type": "node", 
+            "label": "n1"
+          }, 
+          {
+            "@id": "n2", 
+            "@type": "node", 
+            "label": "n2", 
+            "otu": "t1"
+          }, 
+          {
+            "@id": "n3", 
+            "@type": "node", 
+            "label": "n3"
+          }, 
+          {
+            "@id": "n4", 
+            "@type": "node", 
+            "cdao:has_tag": "true", 
+            "label": "n4"
+          }, 
+          {
+            "@id": "n5", 
+            "@type": "node", 
+            "label": "n5", 
+            "otu": "t3"
+          }, 
+          {
+            "@id": "n6", 
+            "@type": "node", 
+            "label": "n6", 
+            "otu": "t2"
+          }, 
+          {
+            "@id": "n7", 
+            "@type": "node", 
+            "label": "n7"
+          }, 
+          {
+            "@id": "n8", 
+            "@type": "node", 
+            "label": "n8", 
+            "otu": "t5"
+          }, 
+          {
+            "@id": "n9", 
+            "@type": "node", 
+            "label": "n9", 
+            "otu": "t4"
+          }
+        ], 
+        "type": "nex:FloatTree"
+      }
+    }, 
+    "version": "0.9"
+  }
+}

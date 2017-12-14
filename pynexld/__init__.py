@@ -10,7 +10,7 @@ import sys
 import os
 
 VERBOSE = True
-
+__version__ = '0.0.1a'
 
 def add_meta_to_obj(meta_el, curr_obj):
     """Creates a key value pair in `curr_obj` from a `meta` NeXML element that is inside
@@ -274,8 +274,7 @@ def nexml_to_json_ld_dict(path=None, dom_root=None):
     compacted = jsonld.compact(payload, context)
     return compacted
 
-
-if __name__ == '__main__':
+def main():
     if len(sys.argv) == 2:
         for filepath in sys.argv[1:]:
             print(json.dumps(nexml_to_json_ld_dict(path=filepath), indent=2, sort_keys=True))
@@ -283,3 +282,6 @@ if __name__ == '__main__':
         sys.exit('''Expecting one filepath to a NeXML doc as an argument.
 JSON-LD will be written to standard output.
 ''')
+
+if __name__ == '__main__':
+    main()

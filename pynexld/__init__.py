@@ -15,6 +15,11 @@ __version__ = '0.0.1a'
 # @TODO: creating a class to manage the context would get rid of the global BASE_URL and a few
 #   other hacks.
 
+####################################################################################################
+# Meta data handling code from DendroPy:
+
+
+
 def add_meta_to_obj(meta_el, curr_obj):
     """Creates a key value pair in `curr_obj` from a `meta` NeXML element that is inside
     the corresponding XML element.
@@ -26,15 +31,18 @@ def add_meta_to_obj(meta_el, curr_obj):
     """
     subatt = meta_el.attrib
     sat = subatt['{http://www.w3.org/2001/XMLSchema-instance}type']
-    if sat in {'ResourceMeta', 'nex:ResourceMeta'}:
+
+    if sat.endswith('ResourceMeta'): # in {'ResourceMeta', 'nex:ResourceMeta'}:
         prop_name = subatt['rel']
         val = subatt['href']
-    elif sat in {'LiteralMeta', 'nex:LiteralMeta'}:
+        annotate_as_reference = True
+    elif sat.endswith('LiteralMeta'): # in {'LiteralMeta', 'nex:LiteralMeta'}:
         prop_name = subatt['property']
         val = subatt.get('content')
         if val is None:
             val = meta_el.text or ''
             val = val.strip()
+        annotate_as_reference = False
     else:
         raise NotImplementedError('meta with type "{}"'.format(sat))
     if prop_name in curr_obj:
@@ -45,7 +53,22 @@ def add_meta_to_obj(meta_el, curr_obj):
             curr_obj[prop_name] = [prev, val]
     else:
         curr_obj[prop_name] = val
-
+    datatype_hint = subatt.get("datatype", None)
+    dt_prefix, dt = textprocessing.parse_curie_standard_qualified_name(datatype_hint)
+    if dt_prefix is not None:
+        try:
+            dt_namespace = self._namespace_registry.prefix_namespace_map[dt_prefix]
+        except KeyError:
+            raise ValueError("CURIE-standard prefix '%s' not defined in document: %s" % (
+            dt_prefix, self._namespace_registry))
+        if dt_namespace.startswith("http://www.w3.org/2001/XMLSchema"):
+            value = self._coerce_to_xml_schema_type(value, dt)
+        elif dt_namespace.startswith("http://www.nexml.org/1.0") or dt_namespace.startswith(
+                "http://www.nexml.org/2009"):
+            value = self._coerce_to_nexml_type(value, dt)
+        elif dt_namespace.startswith("http://dendropy.org") or dt_namespace.startswith(
+                "http://packages.python.org/DendroPy"):
+            value = self._coerce_to_dendropy_type(value, dt)
 
 _REPEATABLE_NEX_EL, _NEXML_ATT_OR_EL = None, None
 
